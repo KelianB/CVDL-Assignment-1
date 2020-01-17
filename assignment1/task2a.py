@@ -22,9 +22,11 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray) -> float:
     Returns:
         Cross entropy error (float)
     """
-    assert targets.shape == outputs.shape 
-    return 0
-
+    assert targets.shape == outputs.shape
+    
+    N = targets.shape[0]
+    #return sum(targets[i] for i in range(targets.shape[0])) / N
+    return - sum(targets*np.log(outputs) + (1 - targets)*np.log(1-outputs)) / N
 
 class BinaryModel:
 
@@ -45,8 +47,7 @@ class BinaryModel:
             y: output of model with shape [batch size, 1]
         """
         # Sigmoid
-        bigWeightMatrix = np.tile(self.w, (1, X.shape[0]))
-        return 1 / (1 + np.exp(-bigWeightMatrix.transpose() * X))
+        return 1 / (1 + np.exp(-X.dot(self.w)))
 
     def backward(self, X: np.ndarray, outputs: np.ndarray, targets: np.ndarray) -> None:
         """
