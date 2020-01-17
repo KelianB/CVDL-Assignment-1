@@ -10,7 +10,8 @@ def pre_process_images(X: np.ndarray):
         X: images of shape [batch size, 785] in the range (0, 1)
     """
     assert X.shape[1] == 784
-    return np.array([x / 255 for x in X] + [1])
+    ones = np.ones((X.shape[0], 1))
+    return np.concatenate((X/255, ones),axis=1)
 
 
 def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray) -> float:
@@ -44,7 +45,7 @@ class BinaryModel:
             y: output of model with shape [batch size, 1]
         """
         # Sigmoid
-        return nd.array([self.w * X])
+        return 1 / (1 + np.exp(-np.array([self.w for _ in X.shape[0]]) * X))
 
     def backward(self, X: np.ndarray, outputs: np.ndarray, targets: np.ndarray) -> None:
         """
@@ -86,7 +87,6 @@ def gradient_approximation_test(model: BinaryModel, X: np.ndarray, Y: np.ndarray
         assert abs(difference) <= epsilon**2,\
             f"Calculated gradient is incorrect. Approximation: {gradient_approximation}, actual gradient: {model.grad[i,0]}"\
             f"If this test fails there could be errors in your cross entropy loss function, forward function or backward function"
-
 
 if __name__ == "__main__":
     category1, category2 = 2, 3
