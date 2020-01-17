@@ -52,6 +52,7 @@ def train(
             
             # Backward
             model.backward(X_batch, train_outputs, Y_batch)
+            model.w -= learning_rate * model.grad
 
             # Track training loss continuously
             _train_loss = cross_entropy_loss(Y_batch, train_outputs)
@@ -85,6 +86,10 @@ validation_percentage = 0.1
 
 X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_binary_dataset(
     category1, category2, validation_percentage)
+
+X_train = pre_process_images(X_train)
+X_val = pre_process_images(X_val)
+X_test = pre_process_images(X_test)
 
 # hyperparameters
 num_epochs = 50

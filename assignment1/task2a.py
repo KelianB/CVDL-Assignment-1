@@ -32,7 +32,7 @@ class BinaryModel:
 
     def __init__(self, l2_reg_lambda: float):
         # Define number of input nodes
-        self.I = 784
+        self.I = 785
         self.w = np.zeros((self.I, 1))
         self.grad = None
 
