@@ -53,6 +53,7 @@ def train(
             # Backward
             model.backward(X_batch, train_outputs, Y_batch)
 
+
             # Track training loss continuously
             _train_loss = cross_entropy_loss(Y_batch, train_outputs)
             train_loss[global_step] = _train_loss
@@ -74,6 +75,7 @@ def train(
 # Load dataset
 category1, category2 = 2, 3
 validation_percentage = 0.1
+
 """
     X = images
     Y = targets
@@ -82,7 +84,6 @@ validation_percentage = 0.1
     _test suffix = test data
 
 """
-
 X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_binary_dataset(
     category1, category2, validation_percentage)
 
