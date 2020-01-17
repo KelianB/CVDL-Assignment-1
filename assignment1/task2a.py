@@ -2,7 +2,6 @@ import numpy as np
 import utils
 np.random.seed(1)
 
-
 def pre_process_images(X: np.ndarray):
     """
     Args:
@@ -11,7 +10,7 @@ def pre_process_images(X: np.ndarray):
         X: images of shape [batch size, 785] in the range (0, 1)
     """
     assert X.shape[1] == 784
-    return X
+    return np.array([x / 255 for x in X] + [1])
 
 
 def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray) -> float:
@@ -45,7 +44,7 @@ class BinaryModel:
             y: output of model with shape [batch size, 1]
         """
         # Sigmoid
-        return None
+        return nd.array([self.w * X])
 
     def backward(self, X: np.ndarray, outputs: np.ndarray, targets: np.ndarray) -> None:
         """
