@@ -47,13 +47,19 @@ def train(
             end = start + batch_size
             X_batch, Y_batch = X_train[start:end], Y_train[start:end]
 
+            # Forward pass
+            train_outputs = model.forward(X_batch)
+            
+            # Backward
+            model.backward(X_batch, train_outputs, Y_batch)
 
             # Track training loss continuously
-            _train_loss = 0
+            _train_loss = cross_entropy_loss(Y_batch, train_outputs)
             train_loss[global_step] = _train_loss
             # Track validation loss / accuracy every time we progress 20% through the dataset
             if global_step % num_steps_per_val == 0:
-                _val_loss = 0
+                val_outputs = model.forward(X_val)
+                _val_loss = cross_entropy_loss(Y_val, val_outputs)
                 val_loss[global_step] = _val_loss
 
                 train_accuracy[global_step] = calculate_accuracy(
@@ -68,6 +74,15 @@ def train(
 # Load dataset
 category1, category2 = 2, 3
 validation_percentage = 0.1
+"""
+    X = images
+    Y = targets
+    _train suffix = training data
+    _val suffix = validation data
+    _test suffix = test data
+
+"""
+
 X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_binary_dataset(
     category1, category2, validation_percentage)
 

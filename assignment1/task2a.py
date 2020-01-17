@@ -32,7 +32,7 @@ class BinaryModel:
 
     def __init__(self, l2_reg_lambda: float):
         # Define number of input nodes
-        self.I = 785
+        self.I = 784
         self.w = np.zeros((self.I, 1))
         self.grad = None
 
@@ -61,9 +61,8 @@ class BinaryModel:
         self.grad = np.zeros_like(self.w)
         assert self.grad.shape == self.w.shape 
 
-        self.grad = -X.transpose().dot(targets- outputs) / X.shape[0]
+        self.grad = -X.transpose().dot(targets - outputs) / X.shape[0]
 
-       
 
     def zero_grad(self) -> None:
         self.grad = None
