@@ -61,7 +61,8 @@ class BinaryModel:
         assert self.grad.shape == self.w.shape 
 
         for i in range(0, X.shape[0]):
-            self.grad = -(targets[i] - outputs[i]) * X[i]
+            self.grad += -(targets[i] - outputs[i]) * X[i]
+        self.grad /= X.shape[0]
 
     def zero_grad(self) -> None:
         self.grad = None
