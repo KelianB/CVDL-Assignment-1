@@ -14,9 +14,17 @@ def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: BinaryModel) -
     Returns:
         Accuracy (float)
     """
+        
     # Task 2c
-    accuracy = 0.0
-    return accuracy
+    outputs = model.forward(X)
+    N = targets.shape[0]
+    binary_threshold = 0.5
+    correctOutputs = 0
+    for i in range(N):
+        if (targets[i] == 1 and outputs[i] >= binary_threshold) or (targets[i] == 0 and outputs[i] < binary_threshold):
+            correctOutputs += 1
+    return correctOutputs / N
+    
 
 
 def train(
@@ -117,7 +125,7 @@ print("Test accuracy:", calculate_accuracy(X_test, Y_test, model))
 
 
 # Plot loss
-#plt.ylim([0., .4]) 
+plt.ylim([0., .4]) 
 utils.plot_loss(train_loss, "Training Loss")
 utils.plot_loss(val_loss, "Validation Loss")
 plt.legend()
@@ -126,7 +134,7 @@ plt.show()
 
 
 # Plot accuracy
-#plt.ylim([0.93, .99])
+plt.ylim([0.93, .99])
 utils.plot_loss(train_accuracy, "Training Accuracy")
 utils.plot_loss(val_accuracy, "Validation Accuracy")
 
