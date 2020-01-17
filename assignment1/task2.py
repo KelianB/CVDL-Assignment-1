@@ -48,6 +48,9 @@ def train(
     model = BinaryModel(l2_reg_lambda)
 
     global_step = 0
+    last_val_loss = 1
+    best_val_loss = 1
+    best_weights = None
     for epoch in range(num_epochs):
         for step in range(num_batches_per_epoch):
             # Select our mini-batch of images / labels
@@ -66,6 +69,7 @@ def train(
             # Track training loss continuously
             _train_loss = cross_entropy_loss(Y_batch, train_outputs)
             train_loss[global_step] = _train_loss
+
             # Track validation loss / accuracy every time we progress 20% through the dataset
             if global_step % num_steps_per_val == 0:
                 val_outputs = model.forward(X_val)
@@ -78,6 +82,16 @@ def train(
                     X_val, Y_val, model)
 
             global_step += 1
+
+        val_outputs = model.forward(X_val)
+        _val_loss = cross_entropy_loss(Y_val, val_outputs)
+        if _val_loss <= best_val_loss:
+            best_weights = model.w
+            best_val_loss = _val_loss
+        if _val_loss > last_val_loss:
+            model.w = best_weights
+            break
+        last_val_loss = _val_loss
     return model, train_loss, val_loss, train_accuracy, val_accuracy
 
 
