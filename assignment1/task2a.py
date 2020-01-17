@@ -30,7 +30,7 @@ class BinaryModel:
 
     def __init__(self, l2_reg_lambda: float):
         # Define number of input nodes
-        self.I = None
+        self.I = 785
         self.w = np.zeros((self.I, 1))
         self.grad = None
 
@@ -45,7 +45,8 @@ class BinaryModel:
             y: output of model with shape [batch size, 1]
         """
         # Sigmoid
-        return 1 / (1 + np.exp(-np.array([self.w for _ in X.shape[0]]) * X))
+        bigWeightMatrix = np.tile(self.w, (1, X.shape[0]))
+        return 1 / (1 + np.exp(-bigWeightMatrix.transpose() * X))
 
     def backward(self, X: np.ndarray, outputs: np.ndarray, targets: np.ndarray) -> None:
         """
