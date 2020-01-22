@@ -116,6 +116,7 @@ X_test = pre_process_images(X_test)
 
 lambda_values = [1.0, 0.1, 0.01, 0.001, 0]
 lambda_validation_accuracies = []
+weight_lengths = []
 
 for l2_reg_lambda in lambda_values:
     # hyperparameters
@@ -143,6 +144,8 @@ for l2_reg_lambda in lambda_values:
     print("Test accuracy:", calculate_accuracy(X_test, Y_test, model))
 
     lambda_validation_accuracies.append(val_accuracy)
+    length = model.w.transpose().dot(model.w)[0][0]
+    weight_lengths.append(length)
 
     '''# Plot loss
     plt.ylim([0., .4]) 
@@ -167,4 +170,12 @@ for (l2_reg_lambda, accuracies) in zip(lambda_values, lambda_validation_accuraci
     utils.plot_loss(accuracies, str(l2_reg_lambda))
 plt.legend(title="Lambda")
 plt.savefig("binary_train_accuracy_regularization.png")
+plt.show()
+
+ind = np.arange(lambda_values.__len__())
+plt.bar(ind, weight_lengths)
+plt.xticks(ind, lambda_values)
+plt.ylabel("Length")
+plt.xlabel("Lambda")
+plt.savefig("binary_train_weight_length.png")
 plt.show()
