@@ -17,10 +17,6 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     
     N = targets.shape[0]
     K = outputs.shape[1]
-    #print(-sum(sum(ce[k] for n in range(N))[k] for k in range(K)) / (N*K))
-    #print(-sum(sum(ce)) / (N*K))
-
-    #return -sum(sum(ce)) / (N*K)
     return -sum(sum(ce)) / (N*K)
     
 
