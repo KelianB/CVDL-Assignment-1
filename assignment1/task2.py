@@ -117,6 +117,7 @@ X_test = pre_process_images(X_test)
 lambda_values = [1.0, 0.1, 0.01, 0.001, 0]
 lambda_validation_accuracies = []
 weight_lengths = []
+weights_as_images = []
 
 for l2_reg_lambda in lambda_values:
     # hyperparameters
@@ -146,6 +147,8 @@ for l2_reg_lambda in lambda_values:
     lambda_validation_accuracies.append(val_accuracy)
     length = model.w.transpose().dot(model.w)[0][0]
     weight_lengths.append(length)
+    image = model.w[:-1].reshape(28, 28)
+    weights_as_images.append(image)
 
     '''# Plot loss
     plt.ylim([0., .4]) 
@@ -178,4 +181,11 @@ plt.xticks(ind, lambda_values)
 plt.ylabel("Length")
 plt.xlabel("Lambda")
 plt.savefig("binary_train_weight_length.png")
+plt.show()
+
+fig, ax = plt.subplots(1, lambda_values.__len__(), subplot_kw={'xticks': [], 'yticks': []})
+for (ax, weights, l2_reg_lambda) in zip(ax.flat, weights_as_images, lambda_values):
+    ax.imshow(weights)
+    ax.set_title(str(l2_reg_lambda))
+plt.savefig("binary_train_weight_image.png")
 plt.show()
