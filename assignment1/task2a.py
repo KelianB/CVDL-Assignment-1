@@ -61,7 +61,7 @@ class BinaryModel:
         self.grad = np.zeros_like(self.w)
         assert self.grad.shape == self.w.shape 
 
-        self.grad = -X.transpose().dot(targets - outputs) / X.shape[0]
+        self.grad = -X.transpose().dot(targets - outputs) / X.shape[0] + self.l2_reg_lambda * 2 * self.w
 
 
     def zero_grad(self) -> None:

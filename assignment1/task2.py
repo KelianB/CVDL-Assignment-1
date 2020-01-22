@@ -114,45 +114,57 @@ X_train = pre_process_images(X_train)
 X_val = pre_process_images(X_val)
 X_test = pre_process_images(X_test)
 
-# hyperparameters
-num_epochs = 50
-learning_rate = 0.2
-batch_size = 128
-l2_reg_lambda = 0
-model, train_loss, val_loss, train_accuracy, val_accuracy = train(
-    num_epochs=num_epochs,
-    learning_rate=learning_rate,
-    batch_size=batch_size,
-    l2_reg_lambda=l2_reg_lambda)
+lambda_values = [1.0, 0.1, 0.01, 0.001, 0]
+lambda_validation_accuracies = []
 
-print("Final Train Cross Entropy Loss:",
-      cross_entropy_loss(Y_train, model.forward(X_train)))
-print("Final Validation Cross Entropy Loss:",
-      cross_entropy_loss(Y_test, model.forward(X_test)))
-print("Final Test Cross Entropy Loss:",
-      cross_entropy_loss(Y_val, model.forward(X_val)))
+for l2_reg_lambda in lambda_values:
+    # hyperparameters
+    num_epochs = 50
+    learning_rate = 0.2
+    batch_size = 128
+    #l2_reg_lambda = 0
+    model, train_loss, val_loss, train_accuracy, val_accuracy = train(
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        l2_reg_lambda=l2_reg_lambda)
 
-
-print("Train accuracy:", calculate_accuracy(X_train, Y_train, model))
-print("Validation accuracy:", calculate_accuracy(X_val, Y_val, model))
-print("Test accuracy:", calculate_accuracy(X_test, Y_test, model))
-
-
-# Plot loss
-plt.ylim([0., .4]) 
-utils.plot_loss(train_loss, "Training Loss")
-utils.plot_loss(val_loss, "Validation Loss")
-plt.legend()
-plt.savefig("binary_train_loss.png")
-plt.show()
+    print("========== lambda:", str(l2_reg_lambda), "==========")
+    print("Final Train Cross Entropy Loss:",
+        cross_entropy_loss(Y_train, model.forward(X_train)))
+    print("Final Validation Cross Entropy Loss:",
+        cross_entropy_loss(Y_test, model.forward(X_test)))
+    print("Final Test Cross Entropy Loss:",
+        cross_entropy_loss(Y_val, model.forward(X_val)))
 
 
-# Plot accuracy
+    print("Train accuracy:", calculate_accuracy(X_train, Y_train, model))
+    print("Validation accuracy:", calculate_accuracy(X_val, Y_val, model))
+    print("Test accuracy:", calculate_accuracy(X_test, Y_test, model))
+
+    lambda_validation_accuracies.append(val_accuracy)
+
+    '''# Plot loss
+    plt.ylim([0., .4]) 
+    utils.plot_loss(train_loss, "Training Loss")
+    utils.plot_loss(val_loss, "Validation Loss")
+    plt.legend()
+    plt.savefig("binary_train_loss_" + str(l2_reg_lambda) + ".png")
+    plt.show()
+
+
+    # Plot accuracy
+    plt.ylim([0.93, .99])
+    utils.plot_loss(train_accuracy, "Training Accuracy")
+    utils.plot_loss(val_accuracy, "Validation Accuracy")
+
+    plt.legend()
+    plt.savefig("binary_train_accuracy_" + str(l2_reg_lambda) + ".png")
+    plt.show()'''
+
 plt.ylim([0.93, .99])
-utils.plot_loss(train_accuracy, "Training Accuracy")
-utils.plot_loss(val_accuracy, "Validation Accuracy")
-
-plt.legend()
-plt.savefig("binary_train_accuracy.png")
+for (l2_reg_lambda, accuracies) in zip(lambda_values, lambda_validation_accuracies):
+    utils.plot_loss(accuracies, str(l2_reg_lambda))
+plt.legend(title="Lambda")
+plt.savefig("binary_train_accuracy_regularization.png")
 plt.show()
-
