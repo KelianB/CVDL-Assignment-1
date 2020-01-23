@@ -63,7 +63,6 @@ class BinaryModel:
 
         self.grad = -X.transpose().dot(targets - outputs) / X.shape[0]
 
-
     def zero_grad(self) -> None:
         self.grad = None
 

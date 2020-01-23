@@ -24,8 +24,6 @@ def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: BinaryModel) -
         if (targets[i] == 1 and outputs[i] >= binary_threshold) or (targets[i] == 0 and outputs[i] < binary_threshold):
             correctOutputs += 1
     return correctOutputs / N
-    
-
 
 def train(
         num_epochs: int,
