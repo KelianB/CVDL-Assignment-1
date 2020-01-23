@@ -58,16 +58,7 @@ class SoftmaxModel:
         assert self.grad.shape == self.w.shape
         
         N = X.shape[0]
-        self.grad = -X.transpose().dot(targets - outputs) / (self.num_outputs * N)
-        
-        # w 785x10
-        # Testing stuff
-        """
-        grad2 = np.zeros_like(self.w)
-        for j in range(self.w.shape[0]):
-            for k in range(self.w.shape[1]):
-                grad2[j,k] = (-1/self.num_outputs) * X.transpose()[j].dot(targets.transpose()[k] - outputs.transpose()[k])
-        """
+        self.grad = -X.transpose().dot(targets - outputs) / (self.num_outputs * N) + self.l2_reg_lambda * 2 * self.w
 
     def zero_grad(self) -> None:
         self.grad = None

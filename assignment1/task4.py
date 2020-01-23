@@ -5,8 +5,7 @@ from task2a import pre_process_images
 from task4a import cross_entropy_loss, SoftmaxModel, one_hot_encode
 np.random.seed(0)
 
-
-
+NUM_OUTPUTS = 10
 
 def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: SoftmaxModel) -> float: 
     """
@@ -33,7 +32,7 @@ def train(
         num_epochs: int,
         learning_rate: float,
         batch_size: int,
-        l2_reg_lambda: float # Task 3 hyperparameter
+        l2_reg_lambda: float
         ):
     global X_train, X_val, X_test
     # Utility variables
@@ -67,7 +66,8 @@ def train(
             train_loss[global_step] = _train_loss
             # Track validation loss / accuracy every time we progress 20% through the dataset
             if global_step % num_steps_per_val == 0:
-                _val_loss = 0
+                val_outputs = model.forward(X_val)
+                _val_loss = cross_entropy_loss(Y_val, val_outputs)
                 val_loss[global_step] = _val_loss
 
                 train_accuracy[global_step] = calculate_accuracy(
@@ -88,15 +88,98 @@ X_train = pre_process_images(X_train)
 X_val = pre_process_images(X_val)
 X_test = pre_process_images(X_test)
 
-Y_train = one_hot_encode(Y_train, 10)
-Y_val = one_hot_encode(Y_val, 10)
-Y_test = one_hot_encode(Y_test, 10)
+Y_train = one_hot_encode(Y_train, NUM_OUTPUTS)
+Y_val = one_hot_encode(Y_val, NUM_OUTPUTS)
+Y_test = one_hot_encode(Y_test, NUM_OUTPUTS)
 
+lambda_values = [0, 0.1]
+lambda_validation_accuracies = []
+weight_lengths = []
+weights_as_images = []
+
+for l2_reg_lambda in lambda_values:
+    # hyperparameters
+    num_epochs = 50
+    learning_rate = 0.2
+    batch_size = 128
+    
+    model, train_loss, val_loss, train_accuracy, val_accuracy = train(
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        l2_reg_lambda=l2_reg_lambda)
+
+    print("========== lambda:", str(l2_reg_lambda), "==========")
+    print("Final Train Cross Entropy Loss:",
+        cross_entropy_loss(Y_train, model.forward(X_train)))
+    print("Final Validation Cross Entropy Loss:",
+        cross_entropy_loss(Y_test, model.forward(X_test)))
+    print("Final Test Cross Entropy Loss:",
+        cross_entropy_loss(Y_val, model.forward(X_val)))
+
+    print("Train accuracy:", calculate_accuracy(X_train, Y_train, model))
+    print("Validation accuracy:", calculate_accuracy(X_val, Y_val, model))
+    print("Test accuracy:", calculate_accuracy(X_test, Y_test, model))
+
+    lambda_validation_accuracies.append(val_accuracy)
+    length = model.w.transpose().dot(model.w)[0][0]
+    weight_lengths.append(length)
+    
+    image = np.zeros((28,0))
+    for i in range(NUM_OUTPUTS):
+        digitImage = model.w[:-1, i].reshape(28, 28)
+        image = np.hstack((image, digitImage))
+        
+    weights_as_images.append(image)
+
+    '''# Plot loss
+    plt.ylim([0., .4]) 
+    utils.plot_loss(train_loss, "Training Loss")
+    utils.plot_loss(val_loss, "Validation Loss")
+    plt.legend()
+    plt.savefig("binary_train_loss_" + str(l2_reg_lambda) + ".png")
+    plt.show()
+    # Plot accuracy
+    plt.ylim([0.93, .99])
+    utils.plot_loss(train_accuracy, "Training Accuracy")
+    utils.plot_loss(val_accuracy, "Validation Accuracy")
+    plt.legend()
+    plt.savefig("binary_train_accuracy_" + str(l2_reg_lambda) + ".png")
+    plt.show()'''
+
+
+
+plt.ylim([0.6, 0.95])
+for (l2_reg_lambda, accuracies) in zip(lambda_values, lambda_validation_accuracies):
+    utils.plot_loss(accuracies, str(l2_reg_lambda))
+plt.legend(title="Lambda")
+plt.savefig("binary_train_accuracy_regularization.png")
+plt.show()
+
+ind = np.arange(lambda_values.__len__())
+plt.bar(ind, weight_lengths)
+plt.xticks(ind, lambda_values)
+plt.ylabel("Length")
+plt.xlabel("Lambda")
+plt.savefig("binary_train_weight_length.png")
+plt.show()
+
+fig, ax = plt.subplots(1, lambda_values.__len__(), subplot_kw={'xticks': [], 'yticks': []})
+for (ax, img, l2_reg_lambda) in zip(ax.flat, weights_as_images, lambda_values):
+    ax.imshow(img, cmap="gray")
+    ax.set_title(str(l2_reg_lambda))
+plt.savefig("binary_train_weight_image.png")
+plt.show()
+
+
+
+"""
 # Hyperparameters
 num_epochs = 50
 learning_rate = .3
 batch_size = 128
 l2_reg_lambda = 0.001
+
 
 model, train_loss, val_loss, train_accuracy, val_accuracy = train(
     num_epochs=num_epochs,
@@ -132,5 +215,6 @@ utils.plot_loss(train_accuracy, "Training Accuracy")
 utils.plot_loss(val_accuracy, "Validation Accuracy")
 plt.legend()
 plt.show()
+"""
 
 
