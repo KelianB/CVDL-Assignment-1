@@ -3,7 +3,6 @@ import utils
 from task2a import pre_process_images
 np.random.seed(2923765431)
 
-
 def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     """
     Args:
@@ -19,7 +18,7 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     K = outputs.shape[1]
     return -sum(sum(ce)) / (N*K)
     
-
+    
 class SoftmaxModel:
 
     def __init__(self, l2_reg_lambda: float):
@@ -77,7 +76,6 @@ def one_hot_encode(Y: np.ndarray, num_classes: int):
         encoded[i,Y[i,0]] = 1
     return encoded
     
-
 
 def gradient_approximation_test(model: SoftmaxModel, X: np.ndarray, Y: np.ndarray):
     """

@@ -57,7 +57,7 @@ def train(
             # Forward pass
             train_outputs = model.forward(X_batch)
 
-            # Backward
+            # Backward propagation
             model.backward(X_batch, train_outputs, Y_batch)
             model.w -= learning_rate * model.grad
             
@@ -88,9 +88,52 @@ X_train = pre_process_images(X_train)
 X_val = pre_process_images(X_val)
 X_test = pre_process_images(X_test)
 
+# One-hot encode our targets
 Y_train = one_hot_encode(Y_train, NUM_OUTPUTS)
 Y_val = one_hot_encode(Y_val, NUM_OUTPUTS)
 Y_test = one_hot_encode(Y_test, NUM_OUTPUTS)
+
+# Hyperparameters
+num_epochs = 50
+learning_rate = .3
+batch_size = 128
+
+# Training
+model, train_loss, val_loss, train_accuracy, val_accuracy = train(
+    num_epochs=num_epochs,
+    learning_rate=learning_rate,
+    batch_size=batch_size,
+    l2_reg_lambda=0)
+
+print("Final Train Cross Entropy Loss:",
+      cross_entropy_loss(Y_train, model.forward(X_train)))
+print("Final Validation Cross Entropy Loss:",
+      cross_entropy_loss(Y_test, model.forward(X_test)))
+print("Final Test Cross Entropy Loss:",
+      cross_entropy_loss(Y_val, model.forward(X_val)))
+
+print("Final Train accuracy:", calculate_accuracy(X_train, Y_train, model))
+print("Final Validation accuracy:", calculate_accuracy(X_val, Y_val, model))
+print("Final Test accuracy:", calculate_accuracy(X_test, Y_test, model))
+
+
+# Plot loss
+plt.ylim([0.01, .2])
+utils.plot_loss(train_loss, "Training Loss")
+utils.plot_loss(val_loss, "Validation Loss")
+plt.xlabel("Gradient steps")
+plt.legend()
+plt.savefig("softmax_train_loss.png")
+plt.show()
+
+# Plot accuracy
+plt.ylim([0.8, .95])
+utils.plot_loss(train_accuracy, "Training Accuracy")
+utils.plot_loss(val_accuracy, "Validation Accuracy")
+plt.xlabel("Gradient steps")
+plt.legend()
+plt.show()
+
 
 lambda_values = [0, 0.1]
 lambda_validation_accuracies = []
@@ -103,12 +146,14 @@ for l2_reg_lambda in lambda_values:
     learning_rate = 0.2
     batch_size = 128
     
+    # Train
     model, train_loss, val_loss, train_accuracy, val_accuracy = train(
         num_epochs=num_epochs,
         learning_rate=learning_rate,
         batch_size=batch_size,
         l2_reg_lambda=l2_reg_lambda)
 
+    # Print final losses for current lambda
     print("========== lambda:", str(l2_reg_lambda), "==========")
     print("Final Train Cross Entropy Loss:",
         cross_entropy_loss(Y_train, model.forward(X_train)))
@@ -117,14 +162,16 @@ for l2_reg_lambda in lambda_values:
     print("Final Test Cross Entropy Loss:",
         cross_entropy_loss(Y_val, model.forward(X_val)))
 
+    # Print accuracy for current lambda
     print("Train accuracy:", calculate_accuracy(X_train, Y_train, model))
     print("Validation accuracy:", calculate_accuracy(X_val, Y_val, model))
     print("Test accuracy:", calculate_accuracy(X_test, Y_test, model))
-
+    
     lambda_validation_accuracies.append(val_accuracy)
     length = model.w.transpose().dot(model.w)[0][0]
     weight_lengths.append(length)
     
+    # Transform our weights into image matrices
     image = np.zeros((28,0))
     for i in range(NUM_OUTPUTS):
         digitImage = model.w[:-1, i].reshape(28, 28)
@@ -132,23 +179,7 @@ for l2_reg_lambda in lambda_values:
         
     weights_as_images.append(image)
 
-    '''# Plot loss
-    plt.ylim([0., .4]) 
-    utils.plot_loss(train_loss, "Training Loss")
-    utils.plot_loss(val_loss, "Validation Loss")
-    plt.legend()
-    plt.savefig("binary_train_loss_" + str(l2_reg_lambda) + ".png")
-    plt.show()
-    # Plot accuracy
-    plt.ylim([0.93, .99])
-    utils.plot_loss(train_accuracy, "Training Accuracy")
-    utils.plot_loss(val_accuracy, "Validation Accuracy")
-    plt.legend()
-    plt.savefig("binary_train_accuracy_" + str(l2_reg_lambda) + ".png")
-    plt.show()'''
-
-
-
+# Plot accuracies
 plt.ylim([0.6, 0.95])
 for (l2_reg_lambda, accuracies) in zip(lambda_values, lambda_validation_accuracies):
     utils.plot_loss(accuracies, str(l2_reg_lambda))
@@ -156,6 +187,7 @@ plt.legend(title="Lambda")
 plt.savefig("binary_train_accuracy_regularization.png")
 plt.show()
 
+# Plot weight lengths
 ind = np.arange(lambda_values.__len__())
 plt.bar(ind, weight_lengths)
 plt.xticks(ind, lambda_values)
@@ -164,57 +196,12 @@ plt.xlabel("Lambda")
 plt.savefig("binary_train_weight_length.png")
 plt.show()
 
-fig, ax = plt.subplots(1, lambda_values.__len__(), subplot_kw={'xticks': [], 'yticks': []})
+# Show images
+fig, ax = plt.subplots(lambda_values.__len__(), 1, subplot_kw={'xticks': [], 'yticks': []})
 for (ax, img, l2_reg_lambda) in zip(ax.flat, weights_as_images, lambda_values):
     ax.imshow(img, cmap="gray")
     ax.set_title(str(l2_reg_lambda))
 plt.savefig("binary_train_weight_image.png")
 plt.show()
-
-
-
-"""
-# Hyperparameters
-num_epochs = 50
-learning_rate = .3
-batch_size = 128
-l2_reg_lambda = 0.001
-
-
-model, train_loss, val_loss, train_accuracy, val_accuracy = train(
-    num_epochs=num_epochs,
-    learning_rate=learning_rate,
-    batch_size=batch_size,
-    l2_reg_lambda=l2_reg_lambda)
-
-print("Final Train Cross Entropy Loss:",
-      cross_entropy_loss(Y_train, model.forward(X_train)))
-print("Final Validation Cross Entropy Loss:",
-      cross_entropy_loss(Y_test, model.forward(X_test)))
-print("Final Test Cross Entropy Loss:",
-      cross_entropy_loss(Y_val, model.forward(X_val)))
-
-
-print("Final Train accuracy:", calculate_accuracy(X_train, Y_train, model))
-print("Final Validation accuracy:", calculate_accuracy(X_val, Y_val, model))
-print("Final Test accuracy:", calculate_accuracy(X_test, Y_test, model))
-
-
-# Plot loss
-#plt.ylim([0.01, .2])
-utils.plot_loss(train_loss, "Training Loss")
-utils.plot_loss(val_loss, "Validation Loss")
-plt.legend()
-plt.savefig("softmax_train_loss.png")
-plt.show()
-
-
-# Plot accuracy
-#plt.ylim([0.8, .95])
-utils.plot_loss(train_accuracy, "Training Accuracy")
-utils.plot_loss(val_accuracy, "Validation Accuracy")
-plt.legend()
-plt.show()
-"""
 
 
