@@ -1,7 +1,12 @@
 import numpy as np
 import utils
 import typing
+from math import sqrt
+
 np.random.seed(1)
+
+meanPixelValue = None
+meanPixelDeviation = None
 
 
 def pre_process_images(X: np.ndarray):
@@ -13,7 +18,19 @@ def pre_process_images(X: np.ndarray):
     """
     assert X.shape[1] == 784,\
         f"X.shape[1]: {X.shape[1]}, should be 784"
-    return X
+    
+    # Calculate mean pixel value and deviation (only does it the first time so we use the same values for each set)
+    if meanPixelValue == None:
+        numValues = X.shape[0]*X.shape[1]
+        meanPixelValue = sum(X) / numValues
+        meanPixelDeviation = sqrt(sum(np.power(X - meanPixelValue, 2)) / numValues)
+    
+    # Normalize
+    
+    # Bias trick
+    ones = np.ones((X.shape[0], 1))
+    return np.concatenate((X, ones),axis=1)
+
 
 
 def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
@@ -26,7 +43,12 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     """
     assert targets.shape == outputs.shape,\
         f"Targets shape: {targets.shape}, outputs: {outputs.shape}"
-    raise NotImplementedError
+    
+    ce = targets * np.log(outputs)    
+    N = targets.shape[0]
+    K = outputs.shape[1]
+    return -sum(sum(ce)) / N
+
 
 
 class SoftmaxModel:
@@ -96,8 +118,10 @@ def one_hot_encode(Y: np.ndarray, num_classes: int):
     Returns:
         Y: shape [Num examples, num classes]
     """
-    raise NotImplementedError
-
+    encoded = np.zeros((Y.shape[0], num_classes))
+    for i in range(Y.shape[0]):
+        encoded[i,Y[i,0]] = 1
+    return encoded
 
 def gradient_approximation_test(
         model: SoftmaxModel, X: np.ndarray, Y: np.ndarray):
