@@ -33,6 +33,9 @@ def train(
         momentum_gamma: float):
     X_train, Y_train, X_val, Y_val, X_test, Y_test = datasets
 
+    for layer in model.ws.shape[0]:
+        model.ws[layer] = np.random.uniform(-1, 1, size = model.ws[layer].shape)
+
     # Utility variables
     num_batches_per_epoch = X_train.shape[0] // batch_size
     num_steps_per_val = num_batches_per_epoch // 5
