@@ -51,6 +51,10 @@ def sigmoid(x):
 def sigmoidDerivative(x):
     expOfMinusX = np.exp(-x)
     return expOfMinusX / np.power(1 + expOfMinusX, 2)
+    
+def softmax(z):
+    exp_z  = np.exp(z)
+    return exp_z / sum(exp_z)
 
 class SoftmaxModel:
 
@@ -76,7 +80,6 @@ class SoftmaxModel:
             w_shape = (prev, size)
             print("Initializing weight to shape:", w_shape)
             w = np.zeros(w_shape)
-            #w = np.random.uniform(-1, 1, w_shape)
             
             self.ws.append(w)
             prev = size
@@ -95,7 +98,8 @@ class SoftmaxModel:
         """
         self.bufferHiddenZ = X.dot(self.ws[0])
         self.bufferHiddenA = sigmoid(self.bufferHiddenZ)
-        return sigmoid(self.bufferHiddenA.dot(self.ws[1]))
+        outputZ = self.bufferHiddenA.dot(self.ws[1])
+        return softmax(outputZ)
         
         
     def backward(self, X: np.ndarray, outputs: np.ndarray,
@@ -121,10 +125,10 @@ class SoftmaxModel:
         # Output error
         outputDeltas = -(targets - outputs) / N
         # Back-propagation
-        hiddenDeltas = outputDeltas.dot(self.ws[1].transpose()) * sigmoidDerivative(self.bufferHiddenZ) / N
+        hiddenDeltas = outputDeltas.dot(self.ws[1].transpose()) * sigmoidDerivative(self.bufferHiddenZ)
         # Update gradient
-        self.grads.append(-X.transpose().dot(hiddenDeltas) / N)
-        self.grads.append(-self.bufferHiddenA.transpose().dot(outputDeltas) / N)
+        self.grads.append(X.transpose().dot(hiddenDeltas))
+        self.grads.append(self.bufferHiddenA.transpose().dot(outputDeltas))
 
     def zero_grad(self) -> None:
         self.grads = [None for i in range(len(self.ws))]
@@ -151,6 +155,7 @@ def gradient_approximation_test(
     """
     epsilon = 1e-3
     for layer_idx, w in enumerate(model.ws):
+        #layer_idx = 0 if layer_idx == 1 else 1
         for i in range(w.shape[0]):
             for j in range(w.shape[1]):
                 orig = model.ws[layer_idx][i, j].copy()
