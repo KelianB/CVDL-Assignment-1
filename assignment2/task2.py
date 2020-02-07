@@ -3,6 +3,7 @@ import utils
 import matplotlib.pyplot as plt
 import typing
 from task2a import cross_entropy_loss, SoftmaxModel, one_hot_encode, pre_process_images
+from task2a import calc_mean_and_deviation
 np.random.seed(0)
 
 
@@ -71,6 +72,8 @@ if __name__ == "__main__":
     validation_percentage = 0.2
     X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_full_mnist(
         validation_percentage)
+
+    calc_mean_and_deviation(X_train)
 
     # Hyperparameters
     num_epochs = 20
