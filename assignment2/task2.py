@@ -49,13 +49,21 @@ def train(
             end = start + batch_size
             X_batch, Y_batch = X_train[start:end], Y_train[start:end]
 
+            train_output = model.forward(X_batch)
+
+            model.backward(X_batch, train_output, Y_batch)
+
+            model.ws -= learning_rate * model.grads
+
             # Track train / validation loss / accuracy
             # every time we progress 20% through the dataset
             if (global_step % num_steps_per_val) == 0:
-                _val_loss = 0
+                val_output = model.forward(X_val)
+                _val_loss = cross_entropy_loss(Y_val, val_output)
                 val_loss[global_step] = _val_loss
 
-                _train_loss = 0
+                train_output = cross_entropy_loss(X_train)
+                _train_loss = cross_entropy_loss(Y_train, train_output)
                 train_loss[global_step] = _train_loss
 
                 train_accuracy[global_step] = calculate_accuracy(
