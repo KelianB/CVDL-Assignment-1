@@ -8,7 +8,6 @@ np.random.seed(1)
 meanPixelValue = None
 meanPixelDeviation = None
 
-
 def pre_process_images(X: np.ndarray):
     """
     Args:
@@ -26,6 +25,7 @@ def pre_process_images(X: np.ndarray):
         meanPixelDeviation = sqrt(sum(np.power(X - meanPixelValue, 2)) / numValues)
     
     # Normalize
+    X = (X - meanPixelValue) / meanPixelDeviation
     
     # Bias trick
     ones = np.ones((X.shape[0], 1))
@@ -48,7 +48,12 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     N = targets.shape[0]
     K = outputs.shape[1]
     return -sum(sum(ce)) / N
-
+    
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+def sigmoidDerivative(x):
+    expOfMinusX = np.exp(-x)
+    return expOfMinusX / np.power(1 + expOfMinusX, 2)
 
 
 class SoftmaxModel:
@@ -79,6 +84,7 @@ class SoftmaxModel:
             prev = size
         self.grads = [None for i in range(len(self.ws))]
 
+
     def forward(self, X: np.ndarray) -> np.ndarray:
         """
         Args:
@@ -86,8 +92,10 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        return None
-
+        hiddenActivation = sigmoid(X.dot(self.ws[0]))
+        return sigmoid(hiddenActivation.dot(self.ws[1]))
+        
+        
     def backward(self, X: np.ndarray, outputs: np.ndarray,
                  targets: np.ndarray) -> None:
         """
@@ -105,6 +113,15 @@ class SoftmaxModel:
         for grad, w in zip(self.grads, self.ws):
             assert grad.shape == w.shape,\
                 f"Expected the same shape. Grad shape: {grad.shape}, w: {w.shape}."
+        
+        # Output error
+        outputDeltas = -(targets - outputs)
+        # Back-propagation
+        hiddenZ = X.dot(self.ws[0])
+        hiddenDeltas = self.ws[1].dot(outputDeltas) * sigmoidDerivative(hiddenZ)
+        # Update gradient
+        self.grads[0] = hiddenDeltas.dot(X)
+        self.grads[1] = outputDeltas.dot(sigmoid(hiddenZ))
 
     def zero_grad(self) -> None:
         self.grads = [None for i in range(len(self.ws))]
