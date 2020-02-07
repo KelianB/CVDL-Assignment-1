@@ -53,8 +53,8 @@ def sigmoidDerivative(x):
     return expOfMinusX / np.power(1 + expOfMinusX, 2)
     
 def softmax(z):
-    exp_z  = np.exp(z)
-    return exp_z / sum(exp_z)
+    exp_z  = np.exp(z.transpose())
+    return (exp_z / sum(exp_z)).transpose()
 
 class SoftmaxModel:
 
@@ -111,7 +111,7 @@ class SoftmaxModel:
             targets: labels/targets of each image of shape: [batch size, num_classes]
         """
         assert targets.shape == outputs.shape,\
-            f"Output shape: {outputs.shape}, targets: {targets.shape}"
+            f"Output shape : {outputs.shape}, targets: {targets.shape}"
         # A list of gradients.
         # For example, self.grads[0] will be the gradient for the first hidden layer
         self.grads = []
