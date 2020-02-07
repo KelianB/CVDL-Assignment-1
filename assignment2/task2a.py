@@ -26,8 +26,9 @@ def pre_process_images(X: np.ndarray):
     return np.concatenate((X, ones),axis=1)
 
 def calc_mean_and_deviation(X: np.array):
-        meanPixelValue = X.mean()
-        meanPixelDeviation = X.std()
+    global meanPixelValue, meanPixelDeviation
+    meanPixelValue = X.mean()
+    meanPixelDeviation = X.std()
 
 def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     """
@@ -42,15 +43,14 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     
     ce = targets * np.log(outputs)    
     N = targets.shape[0]
-    K = outputs.shape[1]
     return -sum(sum(ce)) / N
     
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
+
 def sigmoidDerivative(x):
     expOfMinusX = np.exp(-x)
     return expOfMinusX / np.power(1 + expOfMinusX, 2)
-
 
 class SoftmaxModel:
 
@@ -61,7 +61,7 @@ class SoftmaxModel:
                  use_improved_weight_init: bool  # Task 3c hyperparameter
                  ):
         # Define number of input nodes
-        self.I = None
+        self.I = 785
         self.use_improved_sigmoid = use_improved_sigmoid
 
         # Define number of output nodes
@@ -76,9 +76,14 @@ class SoftmaxModel:
             w_shape = (prev, size)
             print("Initializing weight to shape:", w_shape)
             w = np.zeros(w_shape)
+            #w = np.random.uniform(-1, 1, w_shape)
+            
             self.ws.append(w)
             prev = size
         self.grads = [None for i in range(len(self.ws))]
+        
+        self.bufferHiddenA = None
+        self.bufferHiddenZ = None
 
 
     def forward(self, X: np.ndarray) -> np.ndarray:
@@ -88,8 +93,9 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        hiddenActivation = sigmoid(X.dot(self.ws[0]))
-        return sigmoid(hiddenActivation.dot(self.ws[1]))
+        self.bufferHiddenZ = X.dot(self.ws[0])
+        self.bufferHiddenA = sigmoid(self.bufferHiddenZ)
+        return sigmoid(self.bufferHiddenA.dot(self.ws[1]))
         
         
     def backward(self, X: np.ndarray, outputs: np.ndarray,
@@ -110,14 +116,15 @@ class SoftmaxModel:
             assert grad.shape == w.shape,\
                 f"Expected the same shape. Grad shape: {grad.shape}, w: {w.shape}."
         
+        N = X.shape[0]
+        
         # Output error
-        outputDeltas = -(targets - outputs)
+        outputDeltas = -(targets - outputs) / N
         # Back-propagation
-        hiddenZ = X.dot(self.ws[0])
-        hiddenDeltas = self.ws[1].dot(outputDeltas) * sigmoidDerivative(hiddenZ)
+        hiddenDeltas = outputDeltas.dot(self.ws[1].transpose()) * sigmoidDerivative(self.bufferHiddenZ) / N
         # Update gradient
-        self.grads[0] = hiddenDeltas.dot(X)
-        self.grads[1] = outputDeltas.dot(sigmoid(hiddenZ))
+        self.grads.append(-X.transpose().dot(hiddenDeltas) / N)
+        self.grads.append(-self.bufferHiddenA.transpose().dot(outputDeltas) / N)
 
     def zero_grad(self) -> None:
         self.grads = [None for i in range(len(self.ws))]
@@ -177,6 +184,7 @@ if __name__ == "__main__":
         f"Expected the vector to be [0,0,0,1,0,0,0,0,0,0], but got {Y}"
 
     X_train, Y_train, *_ = utils.load_full_mnist(0.1)
+    calc_mean_and_deviation(X_train)
     X_train = pre_process_images(X_train)
     Y_train = one_hot_encode(Y_train, 10)
     assert X_train.shape[1] == 785,\
