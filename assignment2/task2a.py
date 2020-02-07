@@ -18,20 +18,16 @@ def pre_process_images(X: np.ndarray):
     assert X.shape[1] == 784,\
         f"X.shape[1]: {X.shape[1]}, should be 784"
     
-    # Calculate mean pixel value and deviation (only does it the first time so we use the same values for each set)
-    if meanPixelValue == None:
-        numValues = X.shape[0]*X.shape[1]
-        meanPixelValue = sum(X) / numValues
-        meanPixelDeviation = sqrt(sum(np.power(X - meanPixelValue, 2)) / numValues)
-    
     # Normalize
     X = (X - meanPixelValue) / meanPixelDeviation
-    
+
     # Bias trick
     ones = np.ones((X.shape[0], 1))
     return np.concatenate((X, ones),axis=1)
 
-
+def calc_mean_and_deviation(X: np.array):
+        meanPixelValue = X.mean()
+        meanPixelDeviation = X.std()
 
 def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     """
