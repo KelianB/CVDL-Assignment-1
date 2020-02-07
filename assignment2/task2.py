@@ -17,8 +17,16 @@ def calculate_accuracy(X: np.ndarray, targets: np.ndarray,
     Returns:
         Accuracy (float)
     """
-    accuracy = 0
-    return accuracy
+    outputs = model.forward(X)
+    N = targets.shape[0]
+    correctOutputs = 0
+    
+    for i in range(N):
+        target = np.where(targets[i] == 1)[0][0]
+        output = np.argmax(outputs[i])
+        if target == output:
+            correctOutputs += 1
+    return correctOutputs / N
 
 
 def train(
@@ -33,8 +41,8 @@ def train(
         momentum_gamma: float):
     X_train, Y_train, X_val, Y_val, X_test, Y_test = datasets
 
-    for layer in model.ws.shape[0]:
-        model.ws[layer] = np.random.uniform(-1, 1, size = model.ws[layer].shape)
+    for layer in range(len(model.ws)):
+        model.ws[layer] = np.random.uniform(-1, 1, size =model.ws[layer].shape)
 
     # Utility variables
     num_batches_per_epoch = X_train.shape[0] // batch_size
@@ -47,6 +55,7 @@ def train(
 
     global_step = 0
     for epoch in range(num_epochs):
+        print("Epoch:", epoch)
         for step in range(num_batches_per_epoch):
             start = step * batch_size
             end = start + batch_size
@@ -55,8 +64,9 @@ def train(
             train_output = model.forward(X_batch)
 
             model.backward(X_batch, train_output, Y_batch)
-
-            model.ws -= learning_rate * model.grads
+            
+            for l in range(len(model.ws)):
+                model.ws[l] -= learning_rate * model.grads[l]
 
             # Track train / validation loss / accuracy
             # every time we progress 20% through the dataset
@@ -64,8 +74,8 @@ def train(
                 val_output = model.forward(X_val)
                 _val_loss = cross_entropy_loss(Y_val, val_output)
                 val_loss[global_step] = _val_loss
-
-                train_output = cross_entropy_loss(X_train)
+                
+                train_output = model.forward(X_train)
                 _train_loss = cross_entropy_loss(Y_train, train_output)
                 train_loss[global_step] = _train_loss
 
@@ -84,7 +94,14 @@ if __name__ == "__main__":
     X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_full_mnist(
         validation_percentage)
 
+    # Pre-processing
     calc_mean_and_deviation(X_train)
+    X_train = pre_process_images(X_train)
+    X_val = pre_process_images(X_val)
+    X_test = pre_process_images(X_test)
+    Y_train = one_hot_encode(Y_train, 10)
+    Y_val = one_hot_encode(Y_val, 10)
+    Y_test = one_hot_encode(Y_test, 10)
 
     # Hyperparameters
     num_epochs = 20
