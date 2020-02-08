@@ -56,6 +56,12 @@ def softmax(z):
     exp_z  = np.exp(z.transpose())
     return (exp_z / sum(exp_z)).transpose()
 
+def improved_sigmoid(x):
+    return 1.7159 * np.tanh(2/3 * x)
+
+def improved_sigmoid_derivative(x):
+    return 1.14393 * (1 - np.tanh(2/3 * x)**2)
+
 class SoftmaxModel:
 
     def __init__(self,
@@ -68,6 +74,9 @@ class SoftmaxModel:
         self.I = 785
         self.use_improved_sigmoid = use_improved_sigmoid
 
+        self.sigmoid = lambda x: improved_sigmoid(x) if use_improved_sigmoid else sigmoid(x)
+        self.sigmoid_derivative = lambda x: improved_sigmoid_derivative(x) if use_improved_sigmoid else sigmoidDerivative(x)
+
         # Define number of output nodes
         # neurons_per_layer = [64, 10] indicates that we will have two layers:
         # A hidden layer with 64 neurons and a output layer with 10 neurons.
@@ -79,7 +88,12 @@ class SoftmaxModel:
         for size in self.neurons_per_layer:
             w_shape = (prev, size)
             print("Initializing weight to shape:", w_shape)
-            w = np.zeros(w_shape)
+            #w = np.zeros(w_shape)
+            if use_improved_weight_init:
+                sigma = 1 / np.sqrt(prev)
+                w = np.random.normal(0, sigma, size=w_shape)
+            else:
+                w = np.random.uniform(-1, 1, size=w_shape)
             
             self.ws.append(w)
             prev = size
@@ -97,7 +111,7 @@ class SoftmaxModel:
             y: output of model with shape [batch size, num_outputs]
         """
         self.bufferHiddenZ = X.dot(self.ws[0])
-        self.bufferHiddenA = sigmoid(self.bufferHiddenZ)
+        self.bufferHiddenA = self.sigmoid(self.bufferHiddenZ)
         outputZ = self.bufferHiddenA.dot(self.ws[1])
         return softmax(outputZ)
         
@@ -125,7 +139,7 @@ class SoftmaxModel:
         # Output error
         outputDeltas = -(targets - outputs) / N
         # Back-propagation
-        hiddenDeltas = outputDeltas.dot(self.ws[1].transpose()) * sigmoidDerivative(self.bufferHiddenZ)
+        hiddenDeltas = outputDeltas.dot(self.ws[1].transpose()) * self.sigmoid_derivative(self.bufferHiddenZ)
         # Update gradient
         self.grads.append(X.transpose().dot(hiddenDeltas))
         self.grads.append(self.bufferHiddenA.transpose().dot(outputDeltas))

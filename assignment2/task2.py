@@ -40,9 +40,9 @@ def train(
         use_momentum: bool,
         momentum_gamma: float):
     X_train, Y_train, X_val, Y_val, X_test, Y_test = datasets
-
-    for layer in range(len(model.ws)):
-        model.ws[layer] = np.random.uniform(-1, 1, size =model.ws[layer].shape)
+    #Moved to model
+    #for layer in range(len(model.ws)):
+    #    model.ws[layer] = np.random.uniform(-1, 1, size =model.ws[layer].shape)
 
     # Utility variables
     num_batches_per_epoch = X_train.shape[0] // batch_size
@@ -85,6 +85,9 @@ def train(
                     X_val, Y_val, model)
 
             global_step += 1
+        #Shuffle results in accuracy of about 10%, need to look into that
+        if use_shuffle:
+            np.random.shuffle(X_train)
     return model, train_loss, val_loss, train_accuracy, val_accuracy
 
 
@@ -112,8 +115,8 @@ if __name__ == "__main__":
 
     # Settings for task 3. Keep all to false for task 2.
     use_shuffle = False
-    use_improved_sigmoid = False
-    use_improved_weight_init = False
+    use_improved_sigmoid = True
+    use_improved_weight_init = True
     use_momentum = False
 
     model = SoftmaxModel(
