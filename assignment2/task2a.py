@@ -99,8 +99,9 @@ class SoftmaxModel:
             prev = size
         self.grads = [None for i in range(len(self.ws))]
         
-        self.bufferHiddenA = None
-        self.bufferHiddenZ = None
+        # Buffers for storing activations and weighted sums of the previous iteration (needed for backprop)
+        self.aBuffer = None
+        self.zBuffer = None
 
 
     def forward(self, X: np.ndarray) -> np.ndarray:
@@ -110,11 +111,22 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        self.bufferHiddenZ = X.dot(self.ws[0])
-        self.bufferHiddenA = self.sigmoid(self.bufferHiddenZ)
-        outputZ = self.bufferHiddenA.dot(self.ws[1])
-        return softmax(outputZ)
         
+        self.aBuffer = []
+        self.zBuffer = []
+    
+        for l in range(len(self.ws)):
+            prevActivation = X if l == 0 else self.aBuffer[-1]
+            activationFunc = self.sigmoid if l < len(self.ws) - 1 else softmax
+            self.zBuffer.append(prevActivation.dot(self.ws[l]))
+            self.aBuffer.append(activationFunc(self.zBuffer[-1]))
+    
+        return self.aBuffer[-1]
+        #self.bufferHiddenZ = X.dot(self.ws[0])
+        #self.bufferHiddenA = self.sigmoid(self.bufferHiddenZ)
+        # outputZ = self.bufferHiddenA.dot(self.ws[1])
+        #return softmax(outputZ)
+    
         
     def backward(self, X: np.ndarray, outputs: np.ndarray,
                  targets: np.ndarray) -> None:
@@ -136,13 +148,21 @@ class SoftmaxModel:
         
         N = X.shape[0]
         
+        deltas = [0 for _ in self.ws]
+        
         # Output error
-        outputDeltas = -(targets - outputs) / N
+        deltas[-1] = -(targets - outputs) / N
+        #outputDeltas = -(targets - outputs) / N
         # Back-propagation
-        hiddenDeltas = outputDeltas.dot(self.ws[1].transpose()) * self.sigmoid_derivative(self.bufferHiddenZ)
+        for l in reversed(range(len(self.ws) - 1)):
+            deltas[l] = deltas[l+1].dot(self.ws[l+1].transpose()) * self.sigmoid_derivative(self.zBuffer[l])
+        #hiddenDeltas = outputDeltas.dot(self.ws[1].transpose()) * self.sigmoid_derivative(self.bufferHiddenZ)
         # Update gradient
-        self.grads.append(X.transpose().dot(hiddenDeltas))
-        self.grads.append(self.bufferHiddenA.transpose().dot(outputDeltas))
+        for l in range(len(self.ws)):
+            activation = X if l == 0 else self.aBuffer[l-1]
+            self.grads.append(activation.transpose().dot(deltas[l]))            
+        #self.grads.append(X.transpose().dot(hiddenDeltas))
+        #self.grads.append(self.bufferHiddenA.transpose().dot(outputDeltas))
 
     def zero_grad(self) -> None:
         self.grads = [None for i in range(len(self.ws))]
@@ -169,7 +189,6 @@ def gradient_approximation_test(
     """
     epsilon = 1e-3
     for layer_idx, w in enumerate(model.ws):
-        #layer_idx = 0 if layer_idx == 1 else 1
         for i in range(w.shape[0]):
             for j in range(w.shape[1]):
                 orig = model.ws[layer_idx][i, j].copy()
