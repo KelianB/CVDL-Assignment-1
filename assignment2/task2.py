@@ -85,9 +85,16 @@ def train(
                     X_val, Y_val, model)
 
             global_step += 1
-        #Shuffle results in accuracy of about 10%, need to look into that
+            
+        # Shuffle results in accuracy of about 10%, need to look into that
+        # In order to keep labels in the right order, we shuffle an array of indices
+        # and then apply this ordering to both inputs and labels
         if use_shuffle:
-            np.random.shuffle(X_train)
+            indices = np.arange(X_train.shape[0]);
+            np.random.shuffle(indices)
+            X_train = X_train[indices]
+            Y_train = Y_train[indices]
+            
     return model, train_loss, val_loss, train_accuracy, val_accuracy
 
 
