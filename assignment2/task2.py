@@ -47,11 +47,17 @@ def train(
     # Utility variables
     num_batches_per_epoch = X_train.shape[0] // batch_size
     num_steps_per_val = num_batches_per_epoch // 5
+    
     # Tracking variables to track loss / accuracy
     train_loss = {}
     val_loss = {}
     train_accuracy = {}
     val_accuracy = {}
+
+    # Store last weights update term for momentum
+    last_weights_update = []
+    for l in range(len(model.ws)):
+        last_weights_update.append(np.zeros_like(model.ws[l]))
 
     global_step = 0
     for epoch in range(num_epochs):
@@ -66,7 +72,12 @@ def train(
             model.backward(X_batch, train_output, Y_batch)
             
             for l in range(len(model.ws)):
-                model.ws[l] -= learning_rate * model.grads[l]
+                if use_momentum:
+                    update_term = momentum_gamma * last_weights_update[l] - learning_rate * model.grads[l]
+                    model.ws[l] += update_term
+                    last_weights_update[l] = update_term
+                else:
+                    model.ws[l] -= learning_rate * model.grads[l]    
 
             # Track train / validation loss / accuracy
             # every time we progress 20% through the dataset
@@ -121,10 +132,11 @@ if __name__ == "__main__":
     momentum_gamma = .9  # Task 3 hyperparameter
 
     # Settings for task 3. Keep all to false for task 2.
-    use_shuffle = False
+    use_shuffle = True
     use_improved_sigmoid = True
     use_improved_weight_init = True
-    use_momentum = False
+    use_momentum = True
+    learning_rate = .02
 
     model = SoftmaxModel(
         neurons_per_layer,
