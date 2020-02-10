@@ -108,6 +108,50 @@ def train(
             
     return model, train_loss, val_loss, train_accuracy, val_accuracy
 
+def train_and_evaluate(
+        neurons_per_layer: int,
+        datasets: typing.List[np.ndarray],
+        num_epochs: int,
+        learning_rate: float,
+        batch_size: int,
+        # Task 3 hyperparameters,
+        use_shuffle: bool,
+        use_improved_sigmoid: bool,
+        use_improved_weight_init: bool,
+        use_momentum: bool,
+        momentum_gamma: float):
+
+    model = SoftmaxModel(
+        neurons_per_layer,
+        use_improved_sigmoid,
+        use_improved_weight_init)
+    model, train_loss, val_loss, train_accuracy, val_accuracy = train(
+        model,
+        datasets,
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=use_shuffle,
+        use_momentum=use_momentum,
+        momentum_gamma=momentum_gamma)
+    print("----------", use_shuffle, use_improved_sigmoid, use_improved_weight_init, use_momentum, momentum_gamma, "----------")
+    print("Final Train Cross Entropy Loss:",
+          cross_entropy_loss(Y_train, model.forward(X_train)))
+    print("Final Validation Cross Entropy Loss:",
+          cross_entropy_loss(Y_val, model.forward(X_val)))
+    print("Final Test Cross Entropy Loss:",
+          cross_entropy_loss(Y_test, model.forward(X_test)))
+
+    print("Final Train accuracy:",
+          calculate_accuracy(X_train, Y_train, model))
+    print("Final Validation accuracy:",
+          calculate_accuracy(X_val, Y_val, model))
+    print("Final Test accuracy:",
+          calculate_accuracy(X_test, Y_test, model))
+    return train_loss, val_loss, train_accuracy, val_accuracy 
+
+        
+    
 
 if __name__ == "__main__":
     # Load dataset
@@ -132,10 +176,10 @@ if __name__ == "__main__":
     momentum_gamma = .9  # Task 3 hyperparameter
 
     # Settings for task 3. Keep all to false for task 2.
-    use_shuffle = True
-    use_improved_sigmoid = True
-    use_improved_weight_init = True
-    use_momentum = True
+    use_shuffle = False
+    use_improved_sigmoid = False
+    use_improved_weight_init = False
+    use_momentum = False
     learning_rate = .02
 
     model = SoftmaxModel(
@@ -184,4 +228,85 @@ if __name__ == "__main__":
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Accuracy")
     plt.savefig("softmax_train_graph.png")
+    plt.show()
+
+    results = []
+    legend = ['Standard', 'Shuffle', 'Sigmoid', 'Init', 'Momentum']
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=False,
+        use_improved_sigmoid=False,
+        use_improved_weight_init=False,
+        use_momentum=False,
+        momentum_gamma=.9))
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=False,
+        use_improved_weight_init=False,
+        use_momentum=False,
+        momentum_gamma=.9))
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=False,
+        use_momentum=False,
+        momentum_gamma=.9))
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=False,
+        momentum_gamma=.9))
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=True,
+        momentum_gamma=.9))
+    
+    # Plot loss
+    plt.figure(figsize=(20, 8))
+    plt.subplot(1, 2, 1)
+    plt.ylim([0.0, .5])
+    for (train_loss, val_loss, _, _), name in zip(results, legend):
+        utils.plot_loss(train_loss, name + " - Training Loss")
+        utils.plot_loss(val_loss, name + " - Validation Loss")
+    plt.xlabel("Number of gradient steps")
+    plt.ylabel("Cross Entropy Loss")
+    plt.legend()
+    plt.subplot(1, 2, 2)
+
+    # Plot accuracy
+    plt.ylim([0.86, 1.0])
+    for (_, _, train_accuracy, val_accuracy), name in zip(results, legend):
+        utils.plot_loss(train_accuracy, name + " - Training Accuracy")
+        utils.plot_loss(val_accuracy, name + " - Validation Accuracy")
+    plt.legend()
+    plt.xlabel("Number of gradient steps")
+    plt.ylabel("Accuracy")
+    plt.savefig("softmax_train_variations_graph.png")
     plt.show()
