@@ -60,7 +60,7 @@ def improved_sigmoid(x):
     return 1.7159 * np.tanh(2/3 * x)
 
 def improved_sigmoid_derivative(x):
-    return 1.14393 * (1 - np.tanh(2/3 * x)**2)
+    return 2/3 * 1.7159 * (1 - np.tanh(2/3 * x)**2)
 
 class SoftmaxModel:
 
