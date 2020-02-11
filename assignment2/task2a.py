@@ -163,6 +163,8 @@ class SoftmaxModel:
             self.grads.append(activation.transpose().dot(deltas[l]))            
         #self.grads.append(X.transpose().dot(hiddenDeltas))
         #self.grads.append(self.bufferHiddenA.transpose().dot(outputDeltas))
+        
+    
 
     def zero_grad(self) -> None:
         self.grads = [None for i in range(len(self.ws))]
