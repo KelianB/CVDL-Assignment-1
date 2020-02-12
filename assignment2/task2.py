@@ -134,6 +134,7 @@ def train_and_evaluate(
         use_shuffle=use_shuffle,
         use_momentum=use_momentum,
         momentum_gamma=momentum_gamma)
+        
     print("----------", use_shuffle, use_improved_sigmoid, use_improved_weight_init, use_momentum, momentum_gamma, "----------")
     print("Final Train Cross Entropy Loss:",
           cross_entropy_loss(Y_train, model.forward(X_train)))
@@ -148,9 +149,7 @@ def train_and_evaluate(
           calculate_accuracy(X_val, Y_val, model))
     print("Final Test accuracy:",
           calculate_accuracy(X_test, Y_test, model))
-    return train_loss, val_loss, train_accuracy, val_accuracy 
-
-        
+    return train_loss, val_loss, train_accuracy, val_accuracy         
     
 
 if __name__ == "__main__":
@@ -175,40 +174,18 @@ if __name__ == "__main__":
     neurons_per_layer = [64, 10]
     momentum_gamma = .9  # Task 3 hyperparameter
 
-    # Settings for task 3. Keep all to false for task 2.
-    use_shuffle = False
-    use_improved_sigmoid = False
-    use_improved_weight_init = False
-    use_momentum = False
-    #learning_rate = .02
-
-    model = SoftmaxModel(
+    ## Task 2
+    train_loss, val_loss, train_accuracy, val_accuracy = train_and_evaluate(
         neurons_per_layer,
-        use_improved_sigmoid,
-        use_improved_weight_init)
-    model, train_loss, val_loss, train_accuracy, val_accuracy = train(
-        model,
         [X_train, Y_train, X_val, Y_val, X_test, Y_test],
         num_epochs=num_epochs,
         learning_rate=learning_rate,
         batch_size=batch_size,
-        use_shuffle=use_shuffle,
-        use_momentum=use_momentum,
+        use_shuffle=False,
+        use_improved_sigmoid=False,
+        use_improved_weight_init=False,
+        use_momentum=False,
         momentum_gamma=momentum_gamma)
-
-    print("Final Train Cross Entropy Loss:",
-          cross_entropy_loss(Y_train, model.forward(X_train)))
-    print("Final Validation Cross Entropy Loss:",
-          cross_entropy_loss(Y_val, model.forward(X_val)))
-    print("Final Test Cross Entropy Loss:",
-          cross_entropy_loss(Y_test, model.forward(X_test)))
-
-    print("Final Train accuracy:",
-          calculate_accuracy(X_train, Y_train, model))
-    print("Final Validation accuracy:",
-          calculate_accuracy(X_val, Y_val, model))
-    print("Final Test accuracy:",
-          calculate_accuracy(X_test, Y_test, model))
 
     # Plot loss
     plt.figure(figsize=(20, 8))
@@ -230,6 +207,8 @@ if __name__ == "__main__":
     plt.savefig("softmax_train_graph.png")
     plt.show()
 
+    ## Task 3
+    """
     results = []
     legend = ['Standard', 'Shuffle', 'Sigmoid', 'Init', 'Momentum']
     results.append(train_and_evaluate(
@@ -287,6 +266,9 @@ if __name__ == "__main__":
         use_improved_weight_init=True,
         use_momentum=True,
         momentum_gamma=.9))
+    """
+    
+        ## Task 4
     
     # Plot loss
     plt.figure(figsize=(20, 8))
