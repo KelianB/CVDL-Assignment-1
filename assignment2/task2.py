@@ -180,7 +180,7 @@ if __name__ == "__main__":
     use_improved_sigmoid = False
     use_improved_weight_init = False
     use_momentum = False
-    learning_rate = .02
+    #learning_rate = .02
 
     model = SoftmaxModel(
         neurons_per_layer,
