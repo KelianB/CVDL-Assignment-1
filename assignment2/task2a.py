@@ -21,7 +21,7 @@ def pre_process_images(X: np.ndarray):
     # Normalize
     X = (X - meanPixelValue) / meanPixelDeviation
 
-    # Bias trick
+    # Apply bias trick
     ones = np.ones((X.shape[0], 1))
     return np.concatenate((X, ones),axis=1)
 
@@ -45,22 +45,26 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     N = targets.shape[0]
     return -sum(sum(ce)) / N
     
+## Activation functions and derivatives
+
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def sigmoidDerivative(x):
     expOfMinusX = np.exp(-x)
     return expOfMinusX / np.power(1 + expOfMinusX, 2)
-    
-def softmax(z):
-    exp_z  = np.exp(z.transpose())
-    return (exp_z / sum(exp_z)).transpose()
 
 def improved_sigmoid(x):
     return 1.7159 * np.tanh(2/3 * x)
 
 def improved_sigmoid_derivative(x):
     return 2/3 * 1.7159 * (1 - np.tanh(2/3 * x)**2)
+
+def softmax(z):
+    exp_z  = np.exp(z.transpose())
+    return (exp_z / sum(exp_z)).transpose()
+
+
 
 class SoftmaxModel:
 
@@ -88,7 +92,7 @@ class SoftmaxModel:
         for size in self.neurons_per_layer:
             w_shape = (prev, size)
             print("Initializing weight to shape:", w_shape)
-            #w = np.zeros(w_shape)
+
             if use_improved_weight_init:
                 sigma = 1 / np.sqrt(prev)
                 w = np.random.normal(0, sigma, size=w_shape)
@@ -121,12 +125,7 @@ class SoftmaxModel:
             self.zBuffer.append(prevActivation.dot(self.ws[l]))
             self.aBuffer.append(activationFunc(self.zBuffer[-1]))
     
-        return self.aBuffer[-1]
-        #self.bufferHiddenZ = X.dot(self.ws[0])
-        #self.bufferHiddenA = self.sigmoid(self.bufferHiddenZ)
-        # outputZ = self.bufferHiddenA.dot(self.ws[1])
-        #return softmax(outputZ)
-    
+        return self.aBuffer[-1]    
         
     def backward(self, X: np.ndarray, outputs: np.ndarray,
                  targets: np.ndarray) -> None:
@@ -152,19 +151,13 @@ class SoftmaxModel:
         
         # Output error
         deltas[-1] = -(targets - outputs) / N
-        #outputDeltas = -(targets - outputs) / N
         # Back-propagation
         for l in reversed(range(len(self.ws) - 1)):
             deltas[l] = deltas[l+1].dot(self.ws[l+1].transpose()) * self.sigmoid_derivative(self.zBuffer[l])
-        #hiddenDeltas = outputDeltas.dot(self.ws[1].transpose()) * self.sigmoid_derivative(self.bufferHiddenZ)
-        # Update gradient
+        # Update gradients
         for l in range(len(self.ws)):
             activation = X if l == 0 else self.aBuffer[l-1]
             self.grads.append(activation.transpose().dot(deltas[l]))            
-        #self.grads.append(X.transpose().dot(hiddenDeltas))
-        #self.grads.append(self.bufferHiddenA.transpose().dot(outputDeltas))
-        
-    
 
     def zero_grad(self) -> None:
         self.grads = [None for i in range(len(self.ws))]
