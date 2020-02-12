@@ -231,7 +231,7 @@ if __name__ == "__main__":
     plt.show()'''
 
     ## Task 3
-    
+    """
     results = []
     legend = ['Standard', 'Shuffle', 'Sigmoid', 'Init', 'Momentum']
     results.append(train_and_evaluate(
@@ -289,9 +289,10 @@ if __name__ == "__main__":
         use_improved_weight_init=True,
         use_momentum=True,
         momentum_gamma=.9))
+    """
     
-    
-    ## Task 4
+    ## Task 4a and 4b
+    """
     results = []
     legend = ['Standard (64 hidden neurons)', '16 hidden neurons', '128 hidden neurons']
     learning_rate = 0.02
@@ -328,7 +329,34 @@ if __name__ == "__main__":
         use_improved_weight_init=True,
         use_momentum=True,
         momentum_gamma=.9))
+    """
     
+    ## Task 4d
+    results = []
+    legend = ['Standard (64 hidden neurons)', '60 + 60 hidden neurons']
+    learning_rate = 0.02
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=True,
+        momentum_gamma=.9))
+    results.append(train_and_evaluate(
+        [60, 60, 10],
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=True,
+        momentum_gamma=.9))
     
     ## Plotting for tasks 3 and 4
     # Plot loss
@@ -350,8 +378,6 @@ if __name__ == "__main__":
     plt.ylabel("Cross Entropy Loss")
     plt.title("Validation Loss")
     plt.legend()
-
-
 
     # Plot accuracy
     plt.subplot(2, 2, 2)
