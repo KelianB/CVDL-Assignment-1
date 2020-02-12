@@ -268,8 +268,46 @@ if __name__ == "__main__":
         momentum_gamma=.9))
     """
     
-        ## Task 4
+    ## Task 4
+    results = []
+    legend = ['Standard (64 hidden neurons)', '16 hidden neurons', '128 hidden neurons']
+    learning_rate = 0.02
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=True,
+        momentum_gamma=.9))
+    results.append(train_and_evaluate(
+        [16, 10],
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=True,
+        momentum_gamma=.9))
+    results.append(train_and_evaluate(
+        [128, 10],
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=True,
+        momentum_gamma=.9))
     
+    
+    ## Plotting for tasks 3 and 4
     # Plot loss
     plt.figure(figsize=(20, 8))
     plt.subplot(1, 2, 1)
