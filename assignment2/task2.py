@@ -54,6 +54,12 @@ def train(
     train_accuracy = {}
     val_accuracy = {}
 
+    #Variables for early stopping
+    last_val_loss = 1
+    best_val_loss = 1
+    best_weights = None
+    increased_last_time=False
+
     # Store last weights update term for momentum
     last_weights_update = []
     for l in range(len(model.ws)):
@@ -105,6 +111,23 @@ def train(
             np.random.shuffle(indices)
             X_train = X_train[indices]
             Y_train = Y_train[indices]
+            
+        # Compute validation loss for early stopping
+        val_outputs = model.forward(X_val)
+        _val_loss = cross_entropy_loss(Y_val, val_outputs)
+        if _val_loss <= best_val_loss:
+            best_weights = model.ws
+            best_val_loss = _val_loss
+        if _val_loss > last_val_loss:
+            model.ws = best_weights
+            if increased_last_time:
+                model.ws = best_weights
+                break
+            else:
+                increased_last_time = True
+        else:
+            increased_last_time = False
+        last_val_loss = _val_loss
             
     return model, train_loss, val_loss, train_accuracy, val_accuracy
 
@@ -168,14 +191,14 @@ if __name__ == "__main__":
     Y_test = one_hot_encode(Y_test, 10)
 
     # Hyperparameters
-    num_epochs = 20
+    num_epochs = 30
     learning_rate = .1
     batch_size = 32
     neurons_per_layer = [64, 10]
     momentum_gamma = .9  # Task 3 hyperparameter
 
     ## Task 2
-    train_loss, val_loss, train_accuracy, val_accuracy = train_and_evaluate(
+    '''train_loss, val_loss, train_accuracy, val_accuracy = train_and_evaluate(
         neurons_per_layer,
         [X_train, Y_train, X_val, Y_val, X_test, Y_test],
         num_epochs=num_epochs,
@@ -205,10 +228,10 @@ if __name__ == "__main__":
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Accuracy")
     plt.savefig("softmax_train_graph.png")
-    plt.show()
+    plt.show()'''
 
     ## Task 3
-    """
+    
     results = []
     legend = ['Standard', 'Shuffle', 'Sigmoid', 'Init', 'Momentum']
     results.append(train_and_evaluate(
@@ -259,14 +282,14 @@ if __name__ == "__main__":
         neurons_per_layer,
         [X_train, Y_train, X_val, Y_val, X_test, Y_test],
         num_epochs=num_epochs,
-        learning_rate=learning_rate,
+        learning_rate=.02,
         batch_size=batch_size,
         use_shuffle=True,
         use_improved_sigmoid=True,
         use_improved_weight_init=True,
         use_momentum=True,
         momentum_gamma=.9))
-    """
+    
     
     ## Task 4
     results = []
@@ -309,24 +332,44 @@ if __name__ == "__main__":
     
     ## Plotting for tasks 3 and 4
     # Plot loss
-    plt.figure(figsize=(20, 8))
-    plt.subplot(1, 2, 1)
+    plt.figure(figsize=(20, 16))
+    plt.subplot(2, 2, 1)
     plt.ylim([0.0, .5])
     for (train_loss, val_loss, _, _), name in zip(results, legend):
-        utils.plot_loss(train_loss, name + " - Training Loss")
-        utils.plot_loss(val_loss, name + " - Validation Loss")
+        utils.plot_loss(train_loss, name)
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Cross Entropy Loss")
+    plt.title("Training Loss")
     plt.legend()
-    plt.subplot(1, 2, 2)
+    plt.subplot(2, 2, 3)
+
+    plt.ylim([0.0, .5])
+    for (train_loss, val_loss, _, _), name in zip(results, legend):
+        utils.plot_loss(val_loss, name)
+    plt.xlabel("Number of gradient steps")
+    plt.ylabel("Cross Entropy Loss")
+    plt.title("Validation Loss")
+    plt.legend()
+
+
 
     # Plot accuracy
+    plt.subplot(2, 2, 2)
     plt.ylim([0.86, 1.0])
     for (_, _, train_accuracy, val_accuracy), name in zip(results, legend):
-        utils.plot_loss(train_accuracy, name + " - Training Accuracy")
-        utils.plot_loss(val_accuracy, name + " - Validation Accuracy")
+        utils.plot_loss(train_accuracy, name)
     plt.legend()
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Accuracy")
+    plt.title("Training Accuracy")
+
+    plt.subplot(2, 2, 4)
+    plt.ylim([0.86, 1.0])
+    for (_, _, train_accuracy, val_accuracy), name in zip(results, legend):
+        utils.plot_loss(val_accuracy, name)
+    plt.legend()
+    plt.xlabel("Number of gradient steps")
+    plt.ylabel("Accuracy")
+    plt.title("Validation Accuracy")
     plt.savefig("softmax_train_variations_graph.png")
     plt.show()
