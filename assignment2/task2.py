@@ -3,7 +3,7 @@ import utils
 import matplotlib.pyplot as plt
 import typing
 from task2a import cross_entropy_loss, SoftmaxModel, one_hot_encode, pre_process_images
-from task2a import calc_mean_and_deviation
+from task2a import calc_mean_and_deviation, calc_mean_and_deviation_pixel_normalization, pre_process_images_pixel_normalization
 np.random.seed(0)
 
 
@@ -38,7 +38,8 @@ def train(
         # Task 3 hyperparameters,
         use_shuffle: bool,
         use_momentum: bool,
-        momentum_gamma: float):
+        momentum_gamma: float,
+        use_shift=False):
     X_train, Y_train, X_val, Y_val, X_test, Y_test = datasets
     #Moved to model
     #for layer in range(len(model.ws)):
@@ -69,9 +70,16 @@ def train(
     for epoch in range(num_epochs):
         print("Epoch:", epoch)
         for step in range(num_batches_per_epoch):
+            shift = np.random.randint(low=-2, high=3, size=batch_size)
             start = step * batch_size
             end = start + batch_size
             X_batch, Y_batch = X_train[start:end], Y_train[start:end]
+
+            X_local = X_batch
+            if use_shift:
+                X_local = np.roll(X_batch[:, :784], shift, axis=1)
+                ones = np.ones((X_local.shape[0], 1))
+                X_local= np.concatenate((X_local, ones),axis=1)
 
             train_output = model.forward(X_batch)
 
@@ -107,7 +115,7 @@ def train(
         # In order to keep labels in the right order, we shuffle an array of indices
         # and then apply this ordering to both inputs and labels
         if use_shuffle:
-            indices = np.arange(X_train.shape[0]);
+            indices = np.arange(X_train.shape[0])
             np.random.shuffle(indices)
             X_train = X_train[indices]
             Y_train = Y_train[indices]
@@ -119,7 +127,6 @@ def train(
             best_weights = model.ws
             best_val_loss = _val_loss
         if _val_loss > last_val_loss:
-            model.ws = best_weights
             if increased_last_time:
                 model.ws = best_weights
                 break
@@ -142,7 +149,8 @@ def train_and_evaluate(
         use_improved_sigmoid: bool,
         use_improved_weight_init: bool,
         use_momentum: bool,
-        momentum_gamma: float):
+        momentum_gamma: float,
+        use_shift=False):
 
     model = SoftmaxModel(
         neurons_per_layer,
@@ -156,7 +164,8 @@ def train_and_evaluate(
         batch_size=batch_size,
         use_shuffle=use_shuffle,
         use_momentum=use_momentum,
-        momentum_gamma=momentum_gamma)
+        momentum_gamma=momentum_gamma,
+        use_shift=use_shift)
         
     print("----------", use_shuffle, use_improved_sigmoid, use_improved_weight_init, use_momentum, momentum_gamma, "----------")
     print("Final Train Cross Entropy Loss:",
@@ -231,9 +240,9 @@ if __name__ == "__main__":
     plt.show()'''
 
     ## Task 3
-    """
-    results = []
-    legend = ['Standard', 'Shuffle', 'Sigmoid', 'Init', 'Momentum']
+    
+    '''results = []
+    legend = []
     results.append(train_and_evaluate(
         neurons_per_layer,
         [X_train, Y_train, X_val, Y_val, X_test, Y_test],
@@ -245,6 +254,7 @@ if __name__ == "__main__":
         use_improved_weight_init=False,
         use_momentum=False,
         momentum_gamma=.9))
+    legend.append('Standard')
     results.append(train_and_evaluate(
         neurons_per_layer,
         [X_train, Y_train, X_val, Y_val, X_test, Y_test],
@@ -256,6 +266,7 @@ if __name__ == "__main__":
         use_improved_weight_init=False,
         use_momentum=False,
         momentum_gamma=.9))
+    legend.append('Shuffle')
     results.append(train_and_evaluate(
         neurons_per_layer,
         [X_train, Y_train, X_val, Y_val, X_test, Y_test],
@@ -267,6 +278,7 @@ if __name__ == "__main__":
         use_improved_weight_init=False,
         use_momentum=False,
         momentum_gamma=.9))
+    legend.append('Sigmoid')
     results.append(train_and_evaluate(
         neurons_per_layer,
         [X_train, Y_train, X_val, Y_val, X_test, Y_test],
@@ -278,6 +290,7 @@ if __name__ == "__main__":
         use_improved_weight_init=True,
         use_momentum=False,
         momentum_gamma=.9))
+    legend.append('Init')
     results.append(train_and_evaluate(
         neurons_per_layer,
         [X_train, Y_train, X_val, Y_val, X_test, Y_test],
@@ -289,7 +302,7 @@ if __name__ == "__main__":
         use_improved_weight_init=True,
         use_momentum=True,
         momentum_gamma=.9))
-    """
+    legend.append('Momentum')'''
     
     ## Task 4a and 4b
     """
@@ -332,7 +345,7 @@ if __name__ == "__main__":
     """
     
     ## Task 4d
-    results = []
+    '''results = []
     legend = ['Standard (64 hidden neurons)', '60 + 60 hidden neurons']
     learning_rate = 0.02
     results.append(train_and_evaluate(
@@ -357,6 +370,110 @@ if __name__ == "__main__":
         use_improved_weight_init=True,
         use_momentum=True,
         momentum_gamma=.9))
+    legend.append('Momentum')'''
+
+    '''# Load dataset
+    validation_percentage = 0.2
+    X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_full_mnist(
+        validation_percentage)
+
+    # Pre-processing
+    calc_mean_and_deviation_pixel_normalization(X_train)
+    X_train = pre_process_images_pixel_normalization(X_train)
+    X_val = pre_process_images_pixel_normalization(X_val)
+    X_test = pre_process_images_pixel_normalization(X_test)
+    Y_train = one_hot_encode(Y_train, 10)
+    Y_val = one_hot_encode(Y_val, 10)
+    Y_test = one_hot_encode(Y_test, 10)
+
+
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        use_shuffle=False,
+        use_improved_sigmoid=False,
+        use_improved_weight_init=False,
+        use_momentum=False,
+        momentum_gamma=.9))
+    legend.append('Pixel Normalization')'''
+
+    ## Bonus Task
+    results = []
+    legend = []
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=.1,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=False,
+        momentum_gamma=.9))
+    legend.append('Init')
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=.1,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=False,
+        momentum_gamma=.9,
+        use_shift=True))
+    legend.append('Shift')
+    # Load dataset
+    validation_percentage = 0.2
+    X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_full_mnist(
+        validation_percentage)
+
+    # Pre-processing
+    calc_mean_and_deviation_pixel_normalization(X_train)
+    X_train = pre_process_images_pixel_normalization(X_train)
+    X_val = pre_process_images_pixel_normalization(X_val)
+    X_test = pre_process_images_pixel_normalization(X_test)
+    Y_train = one_hot_encode(Y_train, 10)
+    Y_val = one_hot_encode(Y_val, 10)
+    Y_test = one_hot_encode(Y_test, 10)
+
+
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=.1,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=False,
+        momentum_gamma=.9,
+        use_shift=False))
+    legend.append('Pixel Normalization')
+
+    results.append(train_and_evaluate(
+        neurons_per_layer,
+        [X_train, Y_train, X_val, Y_val, X_test, Y_test],
+        num_epochs=num_epochs,
+        learning_rate=.1,
+        batch_size=batch_size,
+        use_shuffle=True,
+        use_improved_sigmoid=True,
+        use_improved_weight_init=True,
+        use_momentum=False,
+        momentum_gamma=.9,
+        use_shift=True))
+    legend.append('Both')
+
+
+
+
     
     ## Plotting for tasks 3 and 4
     # Plot loss
