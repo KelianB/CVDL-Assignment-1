@@ -8,6 +8,9 @@ np.random.seed(1)
 meanPixelValue = None
 meanPixelDeviation = None
 
+meanPixelValue_pixel_normalization = None
+meanPixelDeviation_pixel_normalization = None
+
 def pre_process_images(X: np.ndarray):
     """
     Args:
@@ -25,10 +28,32 @@ def pre_process_images(X: np.ndarray):
     ones = np.ones((X.shape[0], 1))
     return np.concatenate((X, ones),axis=1)
 
+def pre_process_images_pixel_normalization(X: np.ndarray, epsilon=1e-5):
+    """
+    Args:
+        X: images of shape [batch size, 784] in the range (0, 255)
+    Returns:
+        X: images of shape [batch size, 785]
+    """
+    assert X.shape[1] == 784,\
+        f"X.shape[1]: {X.shape[1]}, should be 784"
+    
+    # Normalize
+    X = (X - meanPixelValue_pixel_normalization) / (meanPixelDeviation_pixel_normalization + epsilon)
+
+    # Bias trick
+    ones = np.ones((X.shape[0], 1))
+    return np.concatenate((X, ones),axis=1)
+
 def calc_mean_and_deviation(X: np.array):
     global meanPixelValue, meanPixelDeviation
     meanPixelValue = X.mean()
     meanPixelDeviation = X.std()
+
+def calc_mean_and_deviation_pixel_normalization(X: np.array):
+    global meanPixelValue_pixel_normalization, meanPixelDeviation_pixel_normalization
+    meanPixelValue_pixel_normalization = X.mean(axis=0)
+    meanPixelDeviation_pixel_normalization = X.std(axis=0)
 
 def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     """
