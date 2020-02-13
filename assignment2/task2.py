@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import typing
 from task2a import cross_entropy_loss, SoftmaxModel, one_hot_encode, pre_process_images
 from task2a import calc_mean_and_deviation
-np.random.seed(0)
 
+np.random.seed(0)
 
 def calculate_accuracy(X: np.ndarray, targets: np.ndarray,
                        model: SoftmaxModel) -> float:
@@ -40,9 +40,6 @@ def train(
         use_momentum: bool,
         momentum_gamma: float):
     X_train, Y_train, X_val, Y_val, X_test, Y_test = datasets
-    #Moved to model
-    #for layer in range(len(model.ws)):
-    #    model.ws[layer] = np.random.uniform(-1, 1, size =model.ws[layer].shape)
 
     # Utility variables
     num_batches_per_epoch = X_train.shape[0] // batch_size
@@ -103,7 +100,6 @@ def train(
 
             global_step += 1
             
-        # Shuffle results in accuracy of about 10%, need to look into that
         # In order to keep labels in the right order, we shuffle an array of indices
         # and then apply this ordering to both inputs and labels
         if use_shuffle:
