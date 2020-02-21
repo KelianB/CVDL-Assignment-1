@@ -24,7 +24,6 @@ def compute_loss_and_accuracy(
         [average_loss, accuracy]: both scalar.
     """
     dataset_size = 0
-    num_batches = 0
     correct = 0
     average_loss = 0
     accuracy = 0
@@ -38,17 +37,12 @@ def compute_loss_and_accuracy(
             output_probs = model(X_batch)
 
             dataset_size += len(X_batch)
-            num_batches += 1
 
             # Compute Loss and Accuracy
             correct += (torch.argmax(output_probs, dim=1) == Y_batch).float().sum()
             average_loss += loss_criterion(output_probs, Y_batch)
 
-        print("Dataset size:", dataset_size)
-        print("Num batches:", num_batches)
-        print("Dataloader len:", len(dataloader))
-
-        average_loss /= num_batches
+        average_loss /= len(dataloader)
         accuracy = 100 * correct / dataset_size
 
     return average_loss, accuracy
@@ -227,7 +221,6 @@ class Trainer:
             return self.global_step % self.num_steps_per_val == 0
 
         for epoch in range(self.epochs):
-            print("Epoch:", epoch)
             self.epoch = epoch
             # Perform a full pass through all the training samples
             for X_batch, Y_batch in self.dataloader_train:
