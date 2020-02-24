@@ -131,7 +131,8 @@ class Trainer:
                  early_stop_count: int,
                  epochs: int,
                  model: torch.nn.Module,
-                 dataloaders: typing.List[torch.utils.data.DataLoader]):
+                 dataloaders: typing.List[torch.utils.data.DataLoader],
+                 use_adam_optimizer=False):
         """
             Initialize our trainer class.
         """
@@ -148,9 +149,11 @@ class Trainer:
         self.model = utils.to_cuda(self.model)
         print(self.model)
 
-        # Define our optimizer. SGD = Stochastich Gradient Descent
-        self.optimizer = torch.optim.SGD(self.model.parameters(),
-                                         self.learning_rate)
+        # Define our optimizer.
+        if use_adam_optimizer: # Adam optimizer
+            self.optimizer = torch.optim.Adam(self.model.parameters(), self.learning_rate)
+        else: # SGD = Stochastic Gradient Descent
+            self.optimizer = torch.optim.SGD(self.model.parameters(), self.learning_rate)
 
         # Load our dataset
         self.dataloader_train, self.dataloader_val, self.dataloader_test = dataloaders
