@@ -54,4 +54,4 @@ def load_cifar10(batch_size: int, validation_fraction: float = 0.1, additional_t
                                                   shuffle=False,
                                                   num_workers=2)
 
-    return dataloader_train, dataloader_test, dataloader_val
+    return dataloader_train, dataloader_val, dataloader_test
