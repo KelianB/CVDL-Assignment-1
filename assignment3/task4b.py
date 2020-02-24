@@ -50,6 +50,7 @@ if __name__ == "__main__":
     activation = first_conv_layer(load_zebra_image())
     print("Activation shape:", activation.shape)
 
+    # Get filter weights and activation images
     indices = [14, 26, 32, 49, 52]
     filter_weights_images = [torch_image_to_numpy(first_conv_layer.weight[i]) for i in indices]
     activation_images = [torch_image_to_numpy(activation[0][i]) for i in indices]
