@@ -8,8 +8,7 @@ np.random.seed(0)
 mean = (0.5, 0.5, 0.5)
 std = (.25, .25, .25)
 
-
-def load_cifar10(batch_size: int, validation_fraction: float = 0.1, additional_transforms = []
+def load_cifar10(batch_size: int, validation_fraction: float = 0.1, additional_transforms = [], mean=mean, std=std
                  ) -> typing.List[torch.utils.data.DataLoader]:
     # Note that transform train will apply the same transform for
     # validation!
