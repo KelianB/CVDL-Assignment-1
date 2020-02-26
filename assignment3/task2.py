@@ -132,7 +132,8 @@ class Trainer:
                  epochs: int,
                  model: torch.nn.Module,
                  dataloaders: typing.List[torch.utils.data.DataLoader],
-                 use_adam_optimizer=False):
+                 use_adam_optimizer=False,
+                 adam_weight_decay=0.0):
         """
             Initialize our trainer class.
         """
@@ -151,7 +152,7 @@ class Trainer:
 
         # Define our optimizer.
         if use_adam_optimizer: # Adam optimizer
-            self.optimizer = torch.optim.Adam(self.model.parameters(), self.learning_rate)
+            self.optimizer = torch.optim.Adam(self.model.parameters(), self.learning_rate, weight_decay=adam_weight_decay)
         else: # SGD = Stochastic Gradient Descent
             self.optimizer = torch.optim.SGD(self.model.parameters(), self.learning_rate)
 
