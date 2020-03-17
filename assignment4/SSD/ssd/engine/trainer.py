@@ -29,6 +29,7 @@ def do_train(cfg, model,
     logger.info("Start training ...")
     meters = MetricLogger()
 
+    model = torch_utils.to_cuda(model)
     model.train()
 
     summary_writer = torch.utils.tensorboard.SummaryWriter(
