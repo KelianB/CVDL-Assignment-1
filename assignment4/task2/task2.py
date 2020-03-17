@@ -109,10 +109,19 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
     # Find all matches with the highest IoU threshold
     best_gt_match_index = sorted_iou_index_matrix[:, num_gt - 1]
     best_matches_ious = iou_matrix[np.arange(num_predictions), best_gt_match_index]
-    matched_predictions_index = np.where(best_matches_ious > iou_threshold)
+    matched_predictions_index = np.where(best_matches_ious > iou_threshold)[0]
     matched_gt_index = best_gt_match_index[matched_predictions_index]
 
-    return prediction_boxes[matched_predictions_index], gt_boxes[matched_gt_index]
+    # remove predictions that matched the same ground truth box
+    unique_matched_gt_index, indices, counts = np.unique(matched_gt_index, return_index=True, return_counts=True)
+    unique_matched_prediction_index = matched_predictions_index[indices]
+    for i, c in filter(lambda x: x[1] > 1, enumerate(iter(counts))):
+        duplicates = np.where(matched_gt_index == unique_matched_gt_index[i])[0]
+        assert(len(duplicates) == c)
+        best_box = best_matches_ious[duplicates].argsort()[len(duplicates) - 1]
+        unique_matched_prediction_index[i] = duplicates[best_box]
+
+    return prediction_boxes[unique_matched_prediction_index], gt_boxes[unique_matched_gt_index]
 
 
 def calculate_individual_image_result(prediction_boxes, gt_boxes, iou_threshold):
