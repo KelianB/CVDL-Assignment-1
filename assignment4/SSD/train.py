@@ -20,7 +20,8 @@ def start_train(cfg):
     model = torch_utils.to_cuda(model)
 
     lr = cfg.SOLVER.LR 
-    optimizer = make_optimizer(cfg, model, lr)
+    #optimizer = make_optimizer(cfg, model, lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr, weight_decay=0.005)
 
     milestones = [step for step in cfg.SOLVER.LR_STEPS]
     scheduler = make_lr_scheduler(cfg, optimizer, milestones)
