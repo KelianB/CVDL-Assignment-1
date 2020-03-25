@@ -22,7 +22,7 @@ class BasicModel(nn.Module):
         image_channels = cfg.MODEL.BACKBONE.INPUT_CHANNELS
         self.output_feature_size = cfg.MODEL.PRIORS.FEATURE_MAPS
 
-        # Custom backbone
+        # Task 4a backbone
         """
         feature_bank_extractors = nn.Sequential(
             nn.Sequential(
@@ -67,8 +67,9 @@ class BasicModel(nn.Module):
                 nn.Conv2d(in_channels=128, out_channels=output_channels[5], kernel_size=3, stride=2, padding=0),
             )
         )
-        """
+       """
 
+        # Custom backbone
         feature_bank_extractors = nn.Sequential(
             nn.Sequential(
                 nn.Conv2d(in_channels=image_channels, out_channels=16, kernel_size=4, stride=1, padding=2),
